@@ -1,0 +1,545 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+/* Thai Font - SOV_BokThang */
+@font-face {
+  font-family: 'SOV_BokThang';
+  src: url('/SOV_BokThang.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 230 40% 8%;
+    --foreground: 0 0% 100%;
+    --card: 230 40% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 230 40% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 280 80% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 320 80% 60%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 230 30% 20%;
+    --muted-foreground: 230 20% 70%;
+    --accent: 180 80% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 280 50% 40%;
+    --input: 230 30% 20%;
+    --ring: 280 80% 60%;
+    --radius: 0;
+    
+    /* 8-bit Retro Colors */
+    --retro-dark: #0a0a1a;
+    --retro-navy: #1a1a3e;
+    --retro-purple: #6b4ee6;
+    --retro-pink: #ff6b9d;
+    --retro-cyan: #00d4ff;
+    --retro-yellow: #ffd700;
+    --retro-white: #ffffff;
+    --retro-star: #fff8dc;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+  
+  body {
+    @apply text-white antialiased;
+    font-family: 'VT323', 'SOV_BokThang', monospace;
+    font-size: 20px;
+    line-height: 1.4;
+    overflow-x: hidden;
+    background: var(--retro-dark);
+  }
+
+  /* Thai language - use SOV_BokThang font */
+  body[data-lang="th"] {
+    font-family: 'SOV_BokThang', 'VT323', monospace;
+  }
+  
+  body[data-lang="th"] .font-pixel {
+    font-family: 'SOV_BokThang', 'Press Start 2P', cursive;
+  }
+  
+  body[data-lang="th"] .font-retro {
+    font-family: 'SOV_BokThang', 'VT323', monospace;
+  }
+  
+  ::selection {
+    background: var(--retro-pink);
+    color: white;
+  }
+}
+
+/* Pixel Font Classes */
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
+}
+
+.font-retro {
+  font-family: 'VT323', monospace;
+}
+
+/* Thai Font Class */
+.font-thai {
+  font-family: 'SOV_BokThang', 'VT323', monospace;
+}
+
+/* Apply Thai font to Thai text elements */
+[data-lang="th"] {
+  font-family: 'SOV_BokThang', 'VT323', monospace;
+}
+
+/* Smooth scroll with Lenis */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Custom scrollbar - retro style */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--retro-navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--retro-purple);
+  border: 2px solid var(--retro-navy);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--retro-pink);
+}
+
+/* Typography - Retro Style */
+.heading-xl {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.5rem, 6vw, 3rem);
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  text-shadow: 
+    4px 4px 0 var(--retro-purple),
+    8px 8px 0 rgba(107, 78, 230, 0.3);
+}
+
+.heading-lg {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-shadow: 
+    3px 3px 0 var(--retro-purple),
+    6px 6px 0 rgba(107, 78, 230, 0.3);
+}
+
+.heading-md {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  text-shadow: 
+    2px 2px 0 var(--retro-purple),
+    4px 4px 0 rgba(107, 78, 230, 0.3);
+}
+
+.heading-sm {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(0.75rem, 2vw, 1rem);
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+}
+
+/* Retro Glow Effects */
+.glow-retro {
+  box-shadow: 
+    0 0 10px var(--retro-cyan),
+    0 0 20px var(--retro-cyan),
+    0 0 40px rgba(0, 212, 255, 0.5);
+}
+
+.glow-pink {
+  box-shadow: 
+    0 0 10px var(--retro-pink),
+    0 0 20px var(--retro-pink),
+    0 0 40px rgba(255, 107, 157, 0.5);
+}
+
+.text-glow-cyan {
+  text-shadow: 
+    0 0 10px var(--retro-cyan),
+    0 0 20px var(--retro-cyan),
+    0 0 40px rgba(0, 212, 255, 0.5);
+}
+
+.text-glow-pink {
+  text-shadow: 
+    0 0 10px var(--retro-pink),
+    0 0 20px var(--retro-pink),
+    0 0 40px rgba(255, 107, 157, 0.5);
+}
+
+/* Retro Border */
+.border-retro {
+  border: 4px solid var(--retro-purple);
+  box-shadow: 
+    4px 4px 0 var(--retro-pink),
+    inset 0 0 20px rgba(107, 78, 230, 0.2);
+}
+
+/* Gradient text - retro */
+.gradient-text-retro {
+  background: linear-gradient(180deg, var(--retro-cyan) 0%, var(--retro-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Retro Card */
+.retro-card {
+  background: rgba(26, 26, 62, 0.9);
+  border: 4px solid var(--retro-purple);
+  box-shadow: 
+    4px 4px 0 var(--retro-pink),
+    0 0 30px rgba(107, 78, 230, 0.3);
+}
+
+/* Starry Background */
+.starry-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: 
+    linear-gradient(180deg, #0a0a1a 0%, #1a1a3e 50%, #2d1b4e 100%);
+}
+
+.starry-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/starry-bg.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.6;
+}
+
+/* Twinkling Stars Animation */
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes twinkle-slow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+@keyframes twinkle-fast {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  75% {
+    opacity: 0.9;
+  }
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.star-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+.star-twinkle-slow {
+  animation: twinkle-slow 3s ease-in-out infinite;
+}
+
+.star-twinkle-fast {
+  animation: twinkle-fast 1.5s ease-in-out infinite;
+}
+
+/* Shooting Star */
+@keyframes shooting-star {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300px) translateY(300px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, white, transparent);
+  animation: shooting-star 2s linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Section base */
+.section {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animation utilities */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.reveal-up.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s steps(4), transform 0.4s steps(4);
+}
+
+/* Language toggle - retro */
+.lang-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
+  background: var(--retro-navy);
+  border: 4px solid var(--retro-purple);
+  box-shadow: 4px 4px 0 var(--retro-pink);
+}
+
+.lang-toggle-btn {
+  padding: 8px 16px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  transition: all 0.1s steps(2);
+}
+
+.lang-toggle-btn.active {
+  background: var(--retro-cyan);
+  color: var(--retro-dark);
+}
+
+.lang-toggle-btn:not(.active) {
+  color: var(--retro-white);
+}
+
+.lang-toggle-btn:not(.active):hover {
+  background: var(--retro-purple);
+}
+
+/* Skill card - retro */
+.skill-card-retro {
+  background: rgba(26, 26, 62, 0.9);
+  border: 4px solid var(--retro-purple);
+  box-shadow: 4px 4px 0 var(--retro-pink);
+  transition: all 0.1s steps(2);
+}
+
+.skill-card-retro:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--retro-pink), 0 0 20px var(--retro-cyan);
+  border-color: var(--retro-cyan);
+}
+
+/* Experience card - retro */
+.experience-card-retro {
+  background: rgba(26, 26, 62, 0.95);
+  border: 4px solid var(--retro-purple);
+  box-shadow: 4px 4px 0 var(--retro-pink);
+}
+
+/* Contact link - retro */
+.contact-link-retro {
+  position: relative;
+  display: inline-block;
+  color: var(--retro-cyan);
+  transition: color 0.1s steps(2);
+}
+
+.contact-link-retro:hover {
+  color: var(--retro-pink);
+  text-shadow: 0 0 10px var(--retro-pink);
+}
+
+/* Tag/Badge - retro */
+.tag-retro {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background: var(--retro-navy);
+  color: var(--retro-cyan);
+  border: 2px solid var(--retro-cyan);
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  box-shadow: 2px 2px 0 var(--retro-purple);
+}
+
+/* Pixel Button */
+.pixel-btn {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
+  padding: 12px 24px;
+  background: var(--retro-purple);
+  color: white;
+  border: none;
+  box-shadow: 
+    4px 4px 0 var(--retro-pink),
+    inset -4px -4px 0 rgba(0,0,0,0.2),
+    inset 4px 4px 0 rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.1s steps(2);
+}
+
+.pixel-btn:hover {
+  background: var(--retro-pink);
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    6px 6px 0 var(--retro-cyan),
+    inset -4px -4px 0 rgba(0,0,0,0.2),
+    inset 4px 4px 0 rgba(255,255,255,0.2);
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 
+    2px 2px 0 var(--retro-cyan),
+    inset -4px -4px 0 rgba(0,0,0,0.2),
+    inset 4px 4px 0 rgba(255,255,255,0.2);
+}
+
+/* Animations for Music Player */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-in {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.slide-in-from-left-2 {
+  animation-name: slide-in-from-left;
+}
+
+/* Scanline effect */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.3;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
