@@ -112,7 +112,7 @@ export function Hero() {
                 }}
               >
                 <img
-                  src="/starry-bg.png"
+                  src="/me/starry-bg.png"
                   alt="Pixel Art"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}

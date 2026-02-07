@@ -44,7 +44,7 @@ const translations = {
     'experience.company': 'IT-CAT Co., Ltd.',
     'experience.location': 'Chiang Mai, Thailand',
     'experience.role': 'Software Developer',
-    'experience.period': '2022 — Present (2.5 Years)',
+    'experience.period': '2023 — Present (2.5 Years)',
     'experience.desc1': 'Developed and maintained enterprise web applications using ASP.NET and ASP.NET Core',
     'experience.desc2': 'Implemented backend logic with C#',
     'experience.desc3': 'Worked with SQL Server and PostgreSQL, including queries and performance optimization',
