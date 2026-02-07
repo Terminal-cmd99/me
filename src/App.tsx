@@ -6,7 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { StarryBackground } from '@/components/StarryBackground';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { ChiptunePlayer } from '@/components/ChiptunePlayer';
+import { MusicPlayer } from '@/components/MusicPlayer';
 import { MiniGame } from '@/components/MiniGame';
 import { Hero } from '@/sections/Hero';
 import { About } from '@/sections/About';
@@ -73,8 +73,8 @@ function App() {
         {/* Language Toggle */}
         <LanguageToggle />
 
-        {/* 8-bit Chiptune Player */}
-        <ChiptunePlayer />
+        {/* YouTube Music Player */}
+        <MusicPlayer />
 
         {/* Mini Game */}
         <MiniGame />

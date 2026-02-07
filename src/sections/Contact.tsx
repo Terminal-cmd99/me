@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type MouseEvent } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -43,6 +43,14 @@ export function Contact() {
     { icon: Facebook, href: 'https://www.facebook.com/nontawat.matong', label: 'Facebook', color: '#1877f2' },
     { icon: Instagram, href: 'https://www.instagram.com/terminal.bat/', label: 'Instagram', color: '#e4405f' },
   ];
+
+  const handleSocialClick = (label: string, event: MouseEvent<HTMLAnchorElement>) => {
+    if (label !== 'Facebook') return;
+    const pass = window.prompt('ใส่รหัสผ่านเพื่อไปที่ Facebook');
+    if (pass !== '0000') {
+      event.preventDefault();
+    }
+  };
 
   return (
     <section
@@ -90,6 +98,7 @@ export function Contact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
+                  onClick={(event) => handleSocialClick(link.label, event)}
                   className="w-14 h-14 flex items-center justify-center transition-all duration-100 hover:translate-x-[-2px] hover:translate-y-[-2px]"
                   style={{
                     background: link.color,

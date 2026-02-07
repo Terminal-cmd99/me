@@ -1,14 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
-/* Thai Font - SOV_BokThang */
-@font-face {
-  font-family: 'SOV_BokThang';
-  src: url('/SOV_BokThang.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,24 +52,24 @@
   
   body {
     @apply text-white antialiased;
-    font-family: 'VT323', 'SOV_BokThang', monospace;
+    font-family: 'VT323', monospace;
     font-size: 20px;
     line-height: 1.4;
     overflow-x: hidden;
     background: var(--retro-dark);
   }
 
-  /* Thai language - use SOV_BokThang font */
+  /* Thai language - use fallback fonts */
   body[data-lang="th"] {
-    font-family: 'SOV_BokThang', 'VT323', monospace;
+    font-family: 'VT323', monospace;
   }
   
   body[data-lang="th"] .font-pixel {
-    font-family: 'SOV_BokThang', 'Press Start 2P', cursive;
+    font-family: 'Press Start 2P', cursive;
   }
   
   body[data-lang="th"] .font-retro {
-    font-family: 'SOV_BokThang', 'VT323', monospace;
+    font-family: 'VT323', monospace;
   }
   
   ::selection {
@@ -96,14 +87,14 @@
   font-family: 'VT323', monospace;
 }
 
-/* Thai Font Class */
+/* Thai Font Class - fallback to system fonts */
 .font-thai {
-  font-family: 'SOV_BokThang', 'VT323', monospace;
+  font-family: 'VT323', monospace;
 }
 
-/* Apply Thai font to Thai text elements */
+/* Apply font to Thai text elements */
 [data-lang="th"] {
-  font-family: 'SOV_BokThang', 'VT323', monospace;
+  font-family: 'VT323', monospace;
 }
 
 /* Smooth scroll with Lenis */

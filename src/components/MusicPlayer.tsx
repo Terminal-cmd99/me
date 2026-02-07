@@ -10,7 +10,7 @@ export function MusicPlayer() {
   const playerRef = useRef<YouTube>(null);
 
   // Video ID from the YouTube Music link
-  const videoId = 'uIz5smH8ieo';
+  const videoId = 'j90nt-6GXng';
 
   const opts = {
     height: '0',
