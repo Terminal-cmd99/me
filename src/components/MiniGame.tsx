@@ -299,11 +299,11 @@ export function MiniGame() {
   // Get character image based on state
   const getCharacterImage = () => {
     if (isJumping) {
-      return '/jump.png';
+      return '/me/jump.png';
     }
     // Alternate between run1 and run2
     const frame = Math.floor(characterFrame);
-    return frame % 2 === 0 ? '/run1.png' : '/run2.png';
+    return frame % 2 === 0 ? '/me/run1.png' : '/me/run2.png';
   };
 
   return (
@@ -480,7 +480,7 @@ export function MiniGame() {
                   
                   {/* Character preview */}
                   <img 
-                    src="/run1.png"
+                    src="/me/run1.png"
                     alt="Character"
                     className="w-16 h-16 mb-6 animate-bounce"
                     style={{
