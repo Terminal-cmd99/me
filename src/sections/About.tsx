@@ -114,7 +114,7 @@ export function About() {
                 }}
               >
                 <img
-                  src="/me-standing.png"
+                  src="/me/me-standing.png"
                   alt="About"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}

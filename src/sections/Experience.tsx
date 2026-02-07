@@ -164,7 +164,7 @@ export function Experience() {
                 }}
               >
                 <img
-                  src="/me-working.png"
+                  src="/me/me-working.png"
                   alt="Experience"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}
