@@ -243,7 +243,7 @@ html.lenis, html.lenis body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/me/starry-bg.png');
+  background-image: url('/starry-bg.png');
   background-size: cover;
   background-position: center;
   opacity: 0.6;

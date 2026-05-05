@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { assetPath } from '@/lib/assetPath';
 import gsap from 'gsap';
 
 export function Hero() {
@@ -112,7 +113,7 @@ export function Hero() {
                 }}
               >
                 <img
-                  src="/me/starry-bg.png"
+                  src={assetPath('starry-bg.png')}
                   alt="Pixel Art"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}

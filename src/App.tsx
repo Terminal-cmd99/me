@@ -8,6 +8,7 @@ import { StarryBackground } from '@/components/StarryBackground';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { MiniGame } from '@/components/MiniGame';
+import { ChatBot } from '@/components/ChatBot';
 import { Hero } from '@/sections/Hero';
 import { About } from '@/sections/About';
 import { Skills } from '@/sections/Skills';
@@ -78,6 +79,9 @@ function App() {
 
         {/* Mini Game */}
         <MiniGame />
+
+        {/* Chat Bot */}
+        <ChatBot />
 
         {/* Main Content */}
         <main className="relative z-10">

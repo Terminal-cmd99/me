@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Trophy, RotateCcw, Play } from 'lucide-react';
+import { assetPath } from '@/lib/assetPath';
 
 interface Obstacle {
   id: number;
@@ -299,11 +300,11 @@ export function MiniGame() {
   // Get character image based on state
   const getCharacterImage = () => {
     if (isJumping) {
-      return '/me/jump.png';
+      return assetPath('jump.png');
     }
     // Alternate between run1 and run2
     const frame = Math.floor(characterFrame);
-    return frame % 2 === 0 ? '/me/run1.png' : '/me/run2.png';
+    return frame % 2 === 0 ? assetPath('run1.png') : assetPath('run2.png');
   };
 
   return (
@@ -480,7 +481,7 @@ export function MiniGame() {
                   
                   {/* Character preview */}
                   <img 
-                    src="/me/run1.png"
+                    src={assetPath('run1.png')}
                     alt="Character"
                     className="w-16 h-16 mb-6 animate-bounce"
                     style={{

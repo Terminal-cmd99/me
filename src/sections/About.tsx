@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { assetPath } from '@/lib/assetPath';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GraduationCap } from 'lucide-react';
@@ -114,7 +115,7 @@ export function About() {
                 }}
               >
                 <img
-                  src="/me/me-standing.png"
+                  src={assetPath('me-standing.png')}
                   alt="About"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}

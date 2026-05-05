@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { assetPath } from '@/lib/assetPath';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Briefcase, MapPin, Calendar, CheckSquare } from 'lucide-react';
@@ -164,7 +165,7 @@ export function Experience() {
                 }}
               >
                 <img
-                  src="/me/me-working.png"
+                  src={assetPath('me-working.png')}
                   alt="Experience"
                   className="w-full h-full object-cover object-top"
                   style={{ imageRendering: 'pixelated' }}

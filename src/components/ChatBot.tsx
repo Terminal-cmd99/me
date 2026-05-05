@@ -1,0 +1,235 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Loader2, MessageSquare, Send, Sparkles, X } from 'lucide-react';
+
+type ChatRole = 'user' | 'assistant';
+
+interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+}
+
+const starterMessages: ChatMessage[] = [
+  {
+    id: 'welcome',
+    role: 'assistant',
+    content:
+      'Hi! I am the portfolio bot. Ask me about skills, work experience, projects, or contact details.',
+  },
+];
+
+export function ChatBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
+  const [error, setError] = useState<string | null>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const canSend = useMemo(() => input.trim().length > 0 && !isLoading, [input, isLoading]);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [messages, isLoading, isOpen]);
+
+  const sendMessage = async () => {
+    const trimmed = input.trim();
+
+    if (!trimmed || isLoading) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: trimmed,
+    };
+
+    const nextMessages = [...messages, userMessage];
+    setMessages(nextMessages);
+    setInput('');
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: nextMessages.map(({ role, content }) => ({ role, content })),
+        }),
+      });
+
+      const data = (await response.json()) as { reply?: string; error?: string };
+
+      if (!response.ok || !data.reply) {
+        throw new Error(data.error || 'Unable to get a response right now.');
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: data.reply,
+        },
+      ]);
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : 'Something went wrong.';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void sendMessage();
+  };
+
+  return (
+    <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
+      {isOpen && (
+        <div
+          className="w-[min(360px,calc(100vw-3rem))] overflow-hidden"
+          style={{
+            background: '#1a1a3e',
+            border: '4px solid #00d4ff',
+            boxShadow: '6px 6px 0 #ff6b9d',
+          }}
+        >
+          <div
+            className="flex items-center justify-between px-4 py-3"
+            style={{
+              background: 'linear-gradient(90deg, #6b4ee6 0%, #00d4ff 100%)',
+              borderBottom: '4px solid #0a0a1a',
+            }}
+          >
+            <div className="flex items-center gap-2 text-[#0a0a1a]">
+              <Sparkles className="h-4 w-4" />
+              <span className="font-pixel text-[10px]">PORTFOLIO BOT</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex h-8 w-8 items-center justify-center"
+              style={{
+                background: '#0a0a1a',
+                boxShadow: '2px 2px 0 rgba(255,255,255,0.25)',
+              }}
+              aria-label="Close chat"
+            >
+              <X className="h-4 w-4 text-white" />
+            </button>
+          </div>
+
+          <div
+            ref={viewportRef}
+            className="max-h-[360px] min-h-[260px] space-y-3 overflow-y-auto px-3 py-3"
+            style={{ background: 'rgba(10, 10, 26, 0.88)' }}
+          >
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className="max-w-[85%] px-3 py-2 font-retro text-lg leading-tight"
+                  style={{
+                    background: message.role === 'user' ? '#00d4ff' : '#6b4ee6',
+                    color: message.role === 'user' ? '#0a0a1a' : '#ffffff',
+                    boxShadow:
+                      message.role === 'user'
+                        ? '3px 3px 0 rgba(255, 107, 157, 0.65)'
+                        : '3px 3px 0 rgba(0, 212, 255, 0.45)',
+                  }}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex justify-start">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 font-retro text-lg text-white"
+                  style={{
+                    background: '#6b4ee6',
+                    boxShadow: '3px 3px 0 rgba(0, 212, 255, 0.45)',
+                  }}
+                >
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Thinking...
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="px-3 pb-3 pt-2" style={{ borderTop: '4px solid #6b4ee6' }}>
+            {error && (
+              <p className="mb-2 font-retro text-lg text-[#ff6b9d]">{error}</p>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex items-end gap-2">
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                rows={2}
+                placeholder="Ask about skills, work, or contact..."
+                className="min-h-[56px] flex-1 resize-none px-3 py-2 font-retro text-lg outline-none"
+                style={{
+                  background: '#0a0a1a',
+                  color: '#ffffff',
+                  border: '3px solid #6b4ee6',
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    if (canSend) {
+                      void sendMessage();
+                    }
+                  }
+                }}
+              />
+
+              <button
+                type="submit"
+                disabled={!canSend}
+                className="flex h-14 w-14 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+                style={{
+                  background: '#ffd700',
+                  color: '#0a0a1a',
+                  border: '3px solid #ffffff',
+                  boxShadow: '3px 3px 0 #ff6b9d',
+                }}
+                aria-label="Send message"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex items-center gap-2 px-4 py-3 font-pixel text-xs transition-transform hover:scale-105"
+        style={{
+          background: '#00d4ff',
+          color: '#0a0a1a',
+          border: '4px solid #fff',
+          boxShadow: '4px 4px 0 #6b4ee6',
+        }}
+      >
+        <MessageSquare className="h-4 w-4" />
+        {isOpen ? 'CLOSE BOT' : 'ASK BOT'}
+      </button>
+    </div>
+  );
+}
