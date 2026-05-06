@@ -7,6 +7,8 @@ interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  action?: 'share-location';
+  locationPrompt?: string;
 }
 
 interface ChatLocation {
@@ -15,6 +17,80 @@ interface ChatLocation {
 }
 
 const sessionNameKey = 'janoi-user-name';
+
+const placeKeywords = [
+  'ร้าน',
+  'อาหาร',
+  'คาเฟ่',
+  'กาแฟ',
+  'ที่เที่ยว',
+  'สถานที่',
+  'เที่ยวไหนดี',
+  'ใกล้ฉัน',
+  'ใกล้ๆ',
+  'แถวนี้',
+  'restaurant',
+  'cafe',
+  'nearby',
+  'place',
+  'food',
+];
+
+function asksForPlace(text: string) {
+  const normalized = text.toLowerCase();
+  return placeKeywords.some((keyword) => normalized.includes(keyword));
+}
+
+function splitAssistantReply(reply: string): string[] {
+  const chunks = reply
+    .split(/\n{2,}|(?<=[.!?。！？])\s+/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  if (chunks.length > 1) {
+    return chunks;
+  }
+
+  const sentences = reply
+    .split(/(?<=[.!?。！？])\s+|(?<=นะ|จ้า|จ๊ะ|แม่|เธอ|เลย|อะ)\s+/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  if (sentences.length > 1) {
+    return sentences;
+  }
+
+  if (reply.length <= 120) {
+    return [reply];
+  }
+
+  const words = reply.split(' ');
+  const result: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    if (`${current} ${word}`.trim().length > 110 && current) {
+      result.push(current.trim());
+      current = word;
+    } else {
+      current = `${current} ${word}`.trim();
+    }
+  }
+
+  if (current) {
+    result.push(current.trim());
+  }
+
+  return result;
+}
+
+function createAssistantMessages(reply: string, idPrefix = `assistant-${Date.now()}`): ChatMessage[] {
+  return splitAssistantReply(reply).map((content, index) => ({
+    id: `${idPrefix}-${index}`,
+    role: 'assistant',
+    content,
+  }));
+}
 
 const createStarterMessages = (name: string): ChatMessage[] => [
   {
@@ -34,7 +110,7 @@ export function ChatBot() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => createStarterMessages(userName));
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<ChatLocation | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'idle' | 'allowed' | 'denied'>('idle');
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'asking' | 'allowed' | 'denied'>('idle');
   const viewportRef = useRef<HTMLDivElement>(null);
 
   const canSend = useMemo(() => input.trim().length > 0 && !isLoading, [input, isLoading]);
@@ -44,6 +120,28 @@ export function ChatBot() {
     if (!viewport) return;
     viewport.scrollTop = viewport.scrollHeight;
   }, [messages, isLoading, isOpen]);
+
+  const requestBotReply = async (nextMessages: ChatMessage[], nextLocation: ChatLocation | null) => {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: nextMessages.map(({ role, content }) => ({ role, content })),
+        userName,
+        location: nextLocation,
+      }),
+    });
+
+    const data = (await response.json()) as { reply?: string; error?: string };
+
+    if (!response.ok || !data.reply) {
+      throw new Error(data.error || 'Unable to get a response right now.');
+    }
+
+    return data.reply;
+  };
 
   const sendMessage = async () => {
     const trimmed = input.trim();
@@ -70,10 +168,24 @@ export function ChatBot() {
       setUserName(nextName);
       setMessages([
         ...nextMessages,
+        ...createAssistantMessages(
+          `โอเค ${nextName} เจน้อยเก็บไว้ในสมองแล้วนะ ถ้าเปิดหน้าใหม่แล้วเจน้อยลืม ก็อย่าด่าแรงนะตัวแม่ เมาท์ไรต่อดี`,
+          `assistant-name-${Date.now()}`
+        ),
+      ]);
+      setIsLoading(false);
+      return;
+    }
+
+    if (asksForPlace(trimmed) && !location) {
+      setMessages([
+        ...nextMessages,
         {
-          id: `assistant-${Date.now()}`,
+          id: `assistant-location-${Date.now()}`,
           role: 'assistant',
-          content: `โอเค ${nextName} จำไว้ในเซกชั่นนี้ละนะ ถ้าหน้าหายเจน้อยอาจลืมอีก อย่าโกรธนะตัวแม่ ว่าแต่วันนี้เหงาเรื่องไรมาเมาท์`,
+          content: 'แชร์โลเคชั่นให้เจน้อยก่อน เดี๋ยวเจน้อยแนะนำสถานที่ให้ แบบไม่มั่วนะจ๊ะ',
+          action: 'share-location',
+          locationPrompt: trimmed,
         },
       ]);
       setIsLoading(false);
@@ -81,31 +193,11 @@ export function ChatBot() {
     }
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: nextMessages.map(({ role, content }) => ({ role, content })),
-          userName,
-          location,
-        }),
-      });
-
-      const data = (await response.json()) as { reply?: string; error?: string };
-
-      if (!response.ok || !data.reply) {
-        throw new Error(data.error || 'Unable to get a response right now.');
-      }
+      const reply = await requestBotReply(nextMessages, location);
 
       setMessages((current) => [
         ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.reply,
-        },
+        ...createAssistantMessages(reply),
       ]);
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'Something went wrong.';
@@ -120,21 +212,65 @@ export function ChatBot() {
     void sendMessage();
   };
 
-  const requestLocation = () => {
+  const requestLocation = (prompt?: string) => {
     if (!navigator.geolocation) {
       setLocationStatus('denied');
+      setMessages((current) => [
+        ...current,
+        ...createAssistantMessages('เครื่องเธอไม่ให้เจน้อยดูโลอะ งั้นบอกย่านหรือจังหวัดมาก็ได้ เดี๋ยวช่วยคิดให้'),
+      ]);
       return;
     }
 
+    setLocationStatus('asking');
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation({
+      async (position) => {
+        const nextLocation = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
-        });
+        };
+
+        setLocation(nextLocation);
         setLocationStatus('allowed');
+
+        if (!prompt) {
+          setMessages((current) => [
+            ...current,
+            ...createAssistantMessages('ได้โลแล้วแม่ ทีนี้ถามเรื่องร้านหรือสถานที่มาได้เลย'),
+          ]);
+          return;
+        }
+
+        const userMessage: ChatMessage = {
+          id: `user-location-${Date.now()}`,
+          role: 'user',
+          content: prompt,
+        };
+
+        const locationNotice = createAssistantMessages('ได้โลแล้ว เดี๋ยวเจน้อยดูให้แป๊บ', `assistant-location-ok-${Date.now()}`);
+        const nextMessages = [...messages, userMessage, ...locationNotice];
+
+        setMessages(nextMessages);
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const reply = await requestBotReply(nextMessages, nextLocation);
+          setMessages((current) => [...current, ...createAssistantMessages(reply)]);
+        } catch (locationError) {
+          setError(locationError instanceof Error ? locationError.message : 'Something went wrong.');
+        } finally {
+          setIsLoading(false);
+        }
       },
-      () => setLocationStatus('denied'),
+      () => {
+        setLocationStatus('denied');
+        setMessages((current) => [
+          ...current,
+          ...createAssistantMessages('ไม่แชร์ก็ไม่เป็นไรแม่ งั้นบอกย่านหรือจังหวัดมาก็ได้ เดี๋ยวเจน้อยช่วยเดาแบบมีสติ'),
+        ]);
+      },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     );
   };
@@ -198,6 +334,22 @@ export function ChatBot() {
                   }}
                 >
                   {message.content}
+                  {message.action === 'share-location' && (
+                    <button
+                      type="button"
+                      onClick={() => requestLocation(message.locationPrompt)}
+                      disabled={locationStatus === 'asking'}
+                      className="mt-3 block px-3 py-2 font-pixel text-[9px] disabled:opacity-60"
+                      style={{
+                        background: '#ffd700',
+                        color: '#0a0a1a',
+                        border: '3px solid #ffffff',
+                        boxShadow: '3px 3px 0 #ff6b9d',
+                      }}
+                    >
+                      {locationStatus === 'asking' ? 'กำลังขอโล...' : 'แชร์โลเคชั่น'}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -212,7 +364,7 @@ export function ChatBot() {
                   }}
                 >
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  เจน้อยกำลังคิดแป๊บ...
+                  เจน้อยกำลังพิมพ์...
                 </div>
               </div>
             )}
@@ -222,22 +374,6 @@ export function ChatBot() {
             {error && (
               <p className="mb-2 font-retro text-lg text-[#ff6b9d]">{error}</p>
             )}
-
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-retro text-sm text-[#a0a0c0]">
-              <span>แชทนี้จะถูกเก็บไว้ให้ผู้สร้างดูนะจ๊ะ</span>
-              <button
-                type="button"
-                onClick={requestLocation}
-                className="px-2 py-1"
-                style={{
-                  background: locationStatus === 'allowed' ? '#00d4ff' : '#0a0a1a',
-                  color: locationStatus === 'allowed' ? '#0a0a1a' : '#ffffff',
-                  border: '2px solid #00d4ff',
-                }}
-              >
-                {locationStatus === 'allowed' ? 'แชร์โลแล้ว' : 'แชร์โลเคชั่น'}
-              </button>
-            </div>
 
             <form onSubmit={handleSubmit} className="flex items-end gap-2">
               <textarea

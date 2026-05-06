@@ -111,7 +111,18 @@ export function BackendPage() {
                     {[log.city, log.country].filter(Boolean).join(', ') || '-'}
                   </td>
                   <td className="p-3 text-[#a0a0c0]">
-                    {log.latitude && log.longitude ? `${log.latitude}, ${log.longitude}` : '-'}
+                    {log.latitude && log.longitude ? (
+                      <a
+                        href={`https://www.google.com/maps?q=${log.latitude},${log.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#00d4ff] underline hover:text-[#ff6b9d]"
+                      >
+                        เปิด Google Maps
+                      </a>
+                    ) : (
+                      '-'
+                    )}
                   </td>
                 </tr>
               ))}
