@@ -9,21 +9,32 @@ interface ChatMessage {
   content: string;
 }
 
-const starterMessages: ChatMessage[] = [
+interface ChatLocation {
+  latitude: number;
+  longitude: number;
+}
+
+const sessionNameKey = 'janoi-user-name';
+
+const createStarterMessages = (name: string): ChatMessage[] => [
   {
     id: 'welcome',
     role: 'assistant',
-    content:
-      'Hi! I am the portfolio bot. Ask me about skills, work experience, projects, or contact details.',
+    content: name
+      ? `กลับมาแล้วเหรอ ${name} เมาท์ไรดีวันนี้ เจน้อยพร้อมมากแม่`
+      : 'หวัดดี เจน้อยน่ารักไงจะใครล่ะ ก่อนเมาท์กัน เธอชื่ออะไรอะ',
   },
 ];
 
 export function ChatBot() {
+  const [userName, setUserName] = useState(() => sessionStorage.getItem(sessionNameKey) || '');
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(starterMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => createStarterMessages(userName));
   const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<ChatLocation | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'allowed' | 'denied'>('idle');
   const viewportRef = useRef<HTMLDivElement>(null);
 
   const canSend = useMemo(() => input.trim().length > 0 && !isLoading, [input, isLoading]);
@@ -53,6 +64,22 @@ export function ChatBot() {
     setIsLoading(true);
     setError(null);
 
+    if (!userName) {
+      const nextName = trimmed.slice(0, 40);
+      sessionStorage.setItem(sessionNameKey, nextName);
+      setUserName(nextName);
+      setMessages([
+        ...nextMessages,
+        {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: `โอเค ${nextName} จำไว้ในเซกชั่นนี้ละนะ ถ้าหน้าหายเจน้อยอาจลืมอีก อย่าโกรธนะตัวแม่ ว่าแต่วันนี้เหงาเรื่องไรมาเมาท์`,
+        },
+      ]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -61,6 +88,8 @@ export function ChatBot() {
         },
         body: JSON.stringify({
           messages: nextMessages.map(({ role, content }) => ({ role, content })),
+          userName,
+          location,
         }),
       });
 
@@ -91,6 +120,25 @@ export function ChatBot() {
     void sendMessage();
   };
 
+  const requestLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationStatus('denied');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocationStatus('allowed');
+      },
+      () => setLocationStatus('denied'),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  };
+
   return (
     <div className="fixed bottom-24 right-6 z-50 flex flex-col items-end gap-3">
       {isOpen && (
@@ -111,7 +159,7 @@ export function ChatBot() {
           >
             <div className="flex items-center gap-2 text-[#0a0a1a]">
               <Sparkles className="h-4 w-4" />
-              <span className="font-pixel text-[10px]">PORTFOLIO BOT</span>
+              <span className="font-pixel text-[10px]">J NOI</span>
             </div>
 
             <button
@@ -164,7 +212,7 @@ export function ChatBot() {
                   }}
                 >
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Thinking...
+                  เจน้อยกำลังคิดแป๊บ...
                 </div>
               </div>
             )}
@@ -175,12 +223,28 @@ export function ChatBot() {
               <p className="mb-2 font-retro text-lg text-[#ff6b9d]">{error}</p>
             )}
 
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 font-retro text-sm text-[#a0a0c0]">
+              <span>แชทนี้จะถูกเก็บไว้ให้ผู้สร้างดูนะจ๊ะ</span>
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="px-2 py-1"
+                style={{
+                  background: locationStatus === 'allowed' ? '#00d4ff' : '#0a0a1a',
+                  color: locationStatus === 'allowed' ? '#0a0a1a' : '#ffffff',
+                  border: '2px solid #00d4ff',
+                }}
+              >
+                {locationStatus === 'allowed' ? 'แชร์โลแล้ว' : 'แชร์โลเคชั่น'}
+              </button>
+            </div>
+
             <form onSubmit={handleSubmit} className="flex items-end gap-2">
               <textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 rows={2}
-                placeholder="Ask about skills, work, or contact..."
+                placeholder={userName ? 'เมาท์กับเจน้อยได้เลย...' : 'บอกชื่อมาก่อนเร็ว...'}
                 className="min-h-[56px] flex-1 resize-none px-3 py-2 font-retro text-lg outline-none"
                 style={{
                   background: '#0a0a1a',
@@ -228,7 +292,7 @@ export function ChatBot() {
         }}
       >
         <MessageSquare className="h-4 w-4" />
-        {isOpen ? 'CLOSE BOT' : 'ASK BOT'}
+        {isOpen ? 'CLOSE J NOI' : 'J NOI'}
       </button>
     </div>
   );

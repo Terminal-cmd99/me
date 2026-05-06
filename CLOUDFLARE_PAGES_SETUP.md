@@ -21,5 +21,7 @@ The workflow deploys to the Cloudflare Pages project named `me`.
 Notes:
 - The chatbot calls `functions/api/chat.ts` on the same domain at `/api/chat`.
 - The OpenAI model is `gpt-5.4-nano`.
+- Chat history is stored in Cloudflare D1 database `me-chat` through the `CHAT_DB` binding.
+- The admin history page is `/backend/`. It uses `ADMIN_PASSCODE` if configured, otherwise the fallback passcode is `0000`.
 - `vite.config.ts` now defaults to root path `/` for Cloudflare Pages.
 - If you still build for GitHub Pages, use `DEPLOY_TARGET=github-pages npm run build`.

@@ -1,0 +1,8 @@
+name = "me"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-05-06"
+
+[[d1_databases]]
+binding = "CHAT_DB"
+database_name = "me-chat"
+database_id = "02878695-5dfe-43da-87bc-e18e854ec4d3"

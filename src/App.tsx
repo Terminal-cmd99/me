@@ -9,6 +9,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { MusicPlayer } from '@/components/MusicPlayer';
 import { MiniGame } from '@/components/MiniGame';
 import { ChatBot } from '@/components/ChatBot';
+import { BackendPage } from '@/components/BackendPage';
 import { Hero } from '@/sections/Hero';
 import { About } from '@/sections/About';
 import { Skills } from '@/sections/Skills';
@@ -24,6 +25,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 function App() {
   const lenisRef = useRef<Lenis | null>(null);
+  const isBackendPage = window.location.pathname.startsWith('/backend');
 
   useEffect(() => {
     // Initialize Lenis smooth scroll
@@ -64,6 +66,10 @@ function App() {
     window.addEventListener('languagechange', handleLanguageChange);
     return () => window.removeEventListener('languagechange', handleLanguageChange);
   }, []);
+
+  if (isBackendPage) {
+    return <BackendPage />;
+  }
 
   return (
     <LanguageProvider>
