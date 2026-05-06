@@ -73,6 +73,8 @@ Behavior rules:
 - Do not write bullet lists, numbered steps, Markdown formatting, or templates unless the user explicitly asks for details.
 - Always finish your final sentence. Never end mid-word or mid-sentence.
 - If the topic needs detail, give only the first quick answer and ask if the user wants the full version.
+- Avoid asking many follow-up questions. Ask at most one short question, and only if it is truly needed.
+- When the user asks for a recommendation, give one useful answer first instead of interviewing them.
 - Put separate chat-like thoughts on separate paragraphs so the UI can show them as separate bubbles.
 - If the user asks about restaurants, cafes, food, nearby places, places to visit, or location-based recommendations and no location is available, say: "แชร์โลเคชั่นให้เจน้อยก่อน เดี๋ยวเจน้อยแนะนำสถานที่ให้".
 - If precise browser latitude/longitude is available, use that as the location source. Ignore IP city/country for recommendations because IP location can be wrong.
@@ -122,6 +124,58 @@ function extractText(output: unknown): string {
   }
 
   return texts.join('\n').trim();
+}
+
+function asksForPlaceRecommendation(text: string) {
+  const normalized = text.toLowerCase();
+  return [
+    'ร้าน',
+    'อาหาร',
+    'คาเฟ่',
+    'กาแฟ',
+    'ที่เที่ยว',
+    'สถานที่',
+    'เที่ยวไหนดี',
+    'ใกล้ฉัน',
+    'ใกล้ๆ',
+    'แถวนี้',
+    'restaurant',
+    'cafe',
+    'nearby',
+    'place',
+    'food',
+  ].some((keyword) => normalized.includes(keyword));
+}
+
+function getMapSearchTerms(text: string) {
+  const normalized = text.toLowerCase();
+
+  if (normalized.includes('กาแฟ') || normalized.includes('คาเฟ่') || normalized.includes('cafe')) {
+    return ['คาเฟ่', 'ร้านกาแฟ'];
+  }
+
+  if (normalized.includes('อาหาร') || normalized.includes('หิว') || normalized.includes('restaurant') || normalized.includes('food')) {
+    return ['ร้านอาหาร', 'ของกิน'];
+  }
+
+  if (normalized.includes('เที่ยว') || normalized.includes('สถานที่') || normalized.includes('place')) {
+    return ['ที่เที่ยว', 'สถานที่น่าสนใจ'];
+  }
+
+  return ['สถานที่ใกล้ฉัน', 'ร้านใกล้ฉัน'];
+}
+
+function googleMapsSearchUrl(term: string, latitude: number, longitude: number) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${term} near ${latitude},${longitude}`)}`;
+}
+
+function buildPlaceReply(userName: string, question: string, latitude: number, longitude: number) {
+  const [primaryTerm, secondaryTerm] = getMapSearchTerms(question);
+  const name = userName || 'เธอ';
+  const primaryUrl = googleMapsSearchUrl(primaryTerm, latitude, longitude);
+  const secondaryUrl = googleMapsSearchUrl(secondaryTerm, latitude, longitude);
+
+  return `ได้ ${name} เจน้อยไม่ส่งเลขพิกัดให้ปวดหัวละ ใช้พินที่เธอแชร์แล้วนะ\n\nเปิด Google Maps หา ${primaryTerm} ใกล้เธอ: ${primaryUrl}\n\nถ้าอันแรกไม่ถูกใจ ลองอันนี้: ${secondaryUrl}`;
 }
 
 export const onRequestOptions: PagesFunction = async () => {
@@ -174,6 +228,44 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     ? `User shared precise browser GPS coordinates: latitude ${latitude}, longitude ${longitude}. Use these coordinates as the ONLY location source for place recommendations. Ignore IP city/country because IP geolocation may be wrong. If you mention location, say it is based on the shared map pin/coordinates.`
     : `User has not shared precise browser location. IP-only rough country: ${country || 'unknown'}. IP-only rough city: ${city || 'unknown'}. Do not use IP city for nearby-place recommendations; ask for location sharing instead.`;
 
+  const saveReply = async (reply: string) => {
+    if (!env.CHAT_DB || !lastUserMessage) {
+      return;
+    }
+
+    await env.CHAT_DB.prepare(
+      `INSERT INTO chat_logs (
+        user_name,
+        question,
+        answer,
+        ip_address,
+        country,
+        city,
+        latitude,
+        longitude,
+        user_agent
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+      .bind(
+        userName || null,
+        lastUserMessage.content.slice(0, 2000),
+        reply.slice(0, 4000),
+        ipAddress || null,
+        country || null,
+        city || null,
+        latitude,
+        longitude,
+        userAgent || null
+      )
+      .run();
+  };
+
+  if (lastUserMessage && latitude && longitude && asksForPlaceRecommendation(lastUserMessage.content)) {
+    const reply = buildPlaceReply(userName, lastUserMessage.content, latitude, longitude);
+    await saveReply(reply);
+    return jsonResponse({ reply });
+  }
+
   const openAIResponse = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: {
@@ -222,33 +314,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     return jsonResponse({ error: 'Model returned an empty response.' }, 502);
   }
 
-  if (env.CHAT_DB && lastUserMessage) {
-    await env.CHAT_DB.prepare(
-      `INSERT INTO chat_logs (
-        user_name,
-        question,
-        answer,
-        ip_address,
-        country,
-        city,
-        latitude,
-        longitude,
-        user_agent
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-      .bind(
-        userName || null,
-        lastUserMessage.content.slice(0, 2000),
-        reply.slice(0, 4000),
-        ipAddress || null,
-        country || null,
-        city || null,
-        latitude,
-        longitude,
-        userAgent || null
-      )
-      .run();
-  }
+  await saveReply(reply);
 
   return jsonResponse({ reply });
 };

@@ -120,6 +120,26 @@ function createAssistantMessages(reply: string, idPrefix = `assistant-${Date.now
   }));
 }
 
+function renderMessageContent(content: string) {
+  return content.split(/(https?:\/\/\S+)/g).map((part, index) => {
+    if (!part.startsWith('http')) {
+      return part;
+    }
+
+    return (
+      <a
+        key={`${part}-${index}`}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-pixel text-[9px] underline hover:text-[#ffd700]"
+      >
+        เปิด Google Maps
+      </a>
+    );
+  });
+}
+
 const createStarterMessages = (name: string): ChatMessage[] => [
   {
     id: 'welcome',
@@ -359,7 +379,7 @@ export function ChatBot() {
                         : '3px 3px 0 rgba(0, 212, 255, 0.45)',
                   }}
                 >
-                  {message.content}
+                  {renderMessageContent(message.content)}
                   {message.action === 'share-location' && (
                     <button
                       type="button"
