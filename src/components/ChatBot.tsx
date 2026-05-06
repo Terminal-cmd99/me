@@ -18,6 +18,34 @@ interface ChatLocation {
 
 const sessionNameKey = 'janoi-user-name';
 
+function pickRandom<T>(items: T[]) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+const firstGreetingMessages = [
+  'หวัดดี เจน้อยน่ารักไงจะใครล่ะ เธอชื่อไรอะ จะได้เรียกถูก',
+  'ฮัลโหลล เจน้อยมาแล้วแม่ ก่อนเมาท์ บอกชื่อมาก่อนเร็ว',
+  'ดีจ้า คนเหงาท่านหนึ่ง เธอชื่ออะไร เจน้อยจะได้จำไว้ในสมอง',
+  'มาแล้วว เจน้อยเอง ไม่ใช่บอทจืด ๆ นะ เธอชื่อไรอะ',
+  'โอ๊ะ มีคนเข้ามาเมาท์ ชื่ออะไรคะคนสวย/คนหล่อ/คนเท่',
+];
+
+const returningGreetingMessages = [
+  (name: string) => `กลับมาแล้วเหรอ ${name} เมาท์ไรดีวันนี้`,
+  (name: string) => `${name} มาอีกละ เจน้อยพร้อมเผือกมาก`,
+  (name: string) => `ว่าไง ${name} วันนี้ใจพังหรือแค่อยากเมาท์`,
+  (name: string) => `อุ๊ย ${name} โผล่มาแล้ว มีเรื่องอะไรมาเล่า`,
+  (name: string) => `${name} จ๋า เจน้อยนั่งรอฟังอยู่ พูดมาเลย`,
+];
+
+const nameSavedMessages = [
+  (name: string) => `โอเค ${name} เจน้อยเก็บไว้ในสมองแล้วนะ เมาท์ไรต่อดี`,
+  (name: string) => `รับทราบ ${name} ชื่อน่าจำอยู่ เจน้อยล็อกไว้ในหัวใจละ`,
+  (name: string) => `${name} ใช่ปะ ได้เลยแม่ เจน้อยจำไว้แล้ว มีเรื่องไรเล่า`,
+  (name: string) => `เค ${name} ต่อไปเจน้อยจะเรียกชื่อนี้นะ อย่ามาหลอกกันล่ะ`,
+  (name: string) => `จดจำ ${name} เรียบร้อยในสมองเจน้อย ว่าแต่วันนี้มาโหมดไหน`,
+];
+
 const placeKeywords = [
   'ร้าน',
   'อาหาร',
@@ -96,9 +124,7 @@ const createStarterMessages = (name: string): ChatMessage[] => [
   {
     id: 'welcome',
     role: 'assistant',
-    content: name
-      ? `กลับมาแล้วเหรอ ${name} เมาท์ไรดีวันนี้ เจน้อยพร้อมมากแม่`
-      : 'หวัดดี เจน้อยน่ารักไงจะใครล่ะ ก่อนเมาท์กัน เธอชื่ออะไรอะ',
+    content: name ? pickRandom(returningGreetingMessages)(name) : pickRandom(firstGreetingMessages),
   },
 ];
 
@@ -169,7 +195,7 @@ export function ChatBot() {
       setMessages([
         ...nextMessages,
         ...createAssistantMessages(
-          `โอเค ${nextName} เจน้อยเก็บไว้ในสมองแล้วนะ ถ้าเปิดหน้าใหม่แล้วเจน้อยลืม ก็อย่าด่าแรงนะตัวแม่ เมาท์ไรต่อดี`,
+          pickRandom(nameSavedMessages)(nextName),
           `assistant-name-${Date.now()}`
         ),
       ]);
