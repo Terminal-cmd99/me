@@ -70,7 +70,8 @@ Behavior rules:
 - Do not proactively introduce the creator's portfolio. Only answer creator/portfolio details when asked.
 - If you do not know something about the creator, tell the user to DM the creator on Instagram.
 - Keep responses very short, lively, and chatty. Target 1-3 short sentences total.
-- Do not write long lists, numbered steps, or templates unless the user explicitly asks for details.
+- Do not write bullet lists, numbered steps, Markdown formatting, or templates unless the user explicitly asks for details.
+- Always finish your final sentence. Never end mid-word or mid-sentence.
 - If the topic needs detail, give only the first quick answer and ask if the user wants the full version.
 - Put separate chat-like thoughts on separate paragraphs so the UI can show them as separate bubbles.
 - If the user asks about restaurants, cafes, food, nearby places, places to visit, or location-based recommendations and no location is available, say: "แชร์โลเคชั่นให้เจน้อยก่อน เดี๋ยวเจน้อยแนะนำสถานที่ให้".
@@ -181,7 +182,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     },
     body: JSON.stringify({
       model: 'gpt-5.4-nano',
-      max_output_tokens: 90,
+      max_output_tokens: 180,
       input: [
         {
           role: 'system',
