@@ -108,7 +108,9 @@ export function BackendPage() {
                   <td className="whitespace-pre-wrap p-3 text-[#ffd700]">{log.answer}</td>
                   <td className="p-3 text-[#a0a0c0]">{log.ip_address || '-'}</td>
                   <td className="p-3 text-[#a0a0c0]">
-                    {[log.city, log.country].filter(Boolean).join(', ') || '-'}
+                    {log.latitude && log.longitude
+                      ? 'GPS pin'
+                      : [log.city, log.country].filter(Boolean).join(', ') || '-'}
                   </td>
                   <td className="p-3 text-[#a0a0c0]">
                     {log.latitude && log.longitude ? (
