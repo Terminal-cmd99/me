@@ -49,10 +49,22 @@ const nameSavedMessages = [
 const placeKeywords = [
   'ร้าน',
   'อาหาร',
+  'กิน',
+  'ข้าว',
+  'หิว',
+  'ของกิน',
   'คาเฟ่',
   'กาแฟ',
   'ที่เที่ยว',
   'สถานที่',
+  'พิกัด',
+  'โลเคชั่น',
+  'แชร์โล',
+  'แชร์ไง',
+  'ส่งโล',
+  'location',
+  'แนะนำ',
+  'เดท',
   'เที่ยวไหนดี',
   'ใกล้ฉัน',
   'ใกล้ๆ',
@@ -180,13 +192,18 @@ export function ChatBot() {
       }),
     });
 
-    const data = (await response.json()) as { reply?: string; error?: string };
+    const data = (await response.json()) as {
+      reply?: string;
+      error?: string;
+      needsLocation?: boolean;
+      locationPrompt?: string;
+    };
 
     if (!response.ok || !data.reply) {
       throw new Error(data.error || 'Unable to get a response right now.');
     }
 
-    return data.reply;
+    return data;
   };
 
   const sendMessage = async () => {
@@ -207,6 +224,21 @@ export function ChatBot() {
     setInput('');
     setIsLoading(true);
     setError(null);
+
+    if (!userName && asksForPlace(trimmed)) {
+      setMessages([
+        ...nextMessages,
+        {
+          id: `assistant-location-${Date.now()}`,
+          role: 'assistant',
+          content: 'ได้ ๆ แต่แชร์โลเคชั่นให้เจน้อยก่อนนะ เดี๋ยวส่งเป็นปุ่ม Google Maps ให้เลย แล้วค่อยบอกชื่อเล่นมาก็ได้แม่',
+          action: 'share-location',
+          locationPrompt: trimmed,
+        },
+      ]);
+      setIsLoading(false);
+      return;
+    }
 
     if (!userName) {
       const nextName = trimmed.slice(0, 40);
@@ -239,11 +271,21 @@ export function ChatBot() {
     }
 
     try {
-      const reply = await requestBotReply(nextMessages, location);
+      const data = await requestBotReply(nextMessages, location);
 
       setMessages((current) => [
         ...current,
-        ...createAssistantMessages(reply),
+        ...(data.needsLocation
+          ? [
+              {
+                id: `assistant-location-${Date.now()}`,
+                role: 'assistant' as const,
+                content: data.reply || 'แชร์โลเคชั่นให้เจน้อยก่อน เดี๋ยวเจน้อยจัดให้',
+                action: 'share-location' as const,
+                locationPrompt: data.locationPrompt || trimmed,
+              },
+            ]
+          : createAssistantMessages(data.reply || '')),
       ]);
     } catch (submitError) {
       const message = submitError instanceof Error ? submitError.message : 'Something went wrong.';
@@ -302,8 +344,8 @@ export function ChatBot() {
         setError(null);
 
         try {
-          const reply = await requestBotReply(nextMessages, nextLocation);
-          setMessages((current) => [...current, ...createAssistantMessages(reply)]);
+          const data = await requestBotReply(nextMessages, nextLocation);
+          setMessages((current) => [...current, ...createAssistantMessages(data.reply || '')]);
         } catch (locationError) {
           setError(locationError instanceof Error ? locationError.message : 'Something went wrong.');
         } finally {

@@ -131,10 +131,22 @@ function asksForPlaceRecommendation(text: string) {
   return [
     'ร้าน',
     'อาหาร',
+    'กิน',
+    'ข้าว',
+    'หิว',
+    'ของกิน',
     'คาเฟ่',
     'กาแฟ',
     'ที่เที่ยว',
     'สถานที่',
+    'พิกัด',
+    'โลเคชั่น',
+    'แชร์โล',
+    'แชร์ไง',
+    'ส่งโล',
+    'location',
+    'แนะนำ',
+    'เดท',
     'เที่ยวไหนดี',
     'ใกล้ฉัน',
     'ใกล้ๆ',
@@ -176,6 +188,11 @@ function buildPlaceReply(userName: string, question: string, latitude: number, l
   const secondaryUrl = googleMapsSearchUrl(secondaryTerm, latitude, longitude);
 
   return `ได้ ${name} เจน้อยไม่ส่งเลขพิกัดให้ปวดหัวละ ใช้พินที่เธอแชร์แล้วนะ\n\nเปิด Google Maps หา ${primaryTerm} ใกล้เธอ: ${primaryUrl}\n\nถ้าอันแรกไม่ถูกใจ ลองอันนี้: ${secondaryUrl}`;
+}
+
+function buildNeedsLocationReply(userName: string) {
+  const name = userName || 'เธอ';
+  return `ได้ ${name} แต่ต้องกดแชร์โลเคชั่นก่อนนะ เจน้อยจะได้ส่งลิงก์ Google Maps ใกล้พินจริงให้ ไม่มั่วแบบดูดวง`; 
 }
 
 export const onRequestOptions: PagesFunction = async () => {
@@ -264,6 +281,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
     const reply = buildPlaceReply(userName, lastUserMessage.content, latitude, longitude);
     await saveReply(reply);
     return jsonResponse({ reply });
+  }
+
+  if (lastUserMessage && !latitude && !longitude && asksForPlaceRecommendation(lastUserMessage.content)) {
+    const reply = buildNeedsLocationReply(userName);
+    await saveReply(reply);
+    return jsonResponse({
+      reply,
+      needsLocation: true,
+      locationPrompt: lastUserMessage.content,
+    });
   }
 
   const openAIResponse = await fetch('https://api.openai.com/v1/responses', {
